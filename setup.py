@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="cpquant",
-    version="0.0.1",
+    version="0.0.2",
     author="Charlie Ray",
     author_email="charlie.ray320@gmail.com",
     description="A package containing common functions for CP Quant Club",
