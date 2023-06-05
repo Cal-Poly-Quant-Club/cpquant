@@ -1,0 +1,15 @@
+To upload new code run the following lines in the cpquant directory
+
+python3 setup.py sdist bdist_wheel
+python -m twine upload dist/*
+
+
+
+These are also dependencies
+
+sudo python -m pip install --upgrade pip setuptools wheel
+sudo python -m pip install tqdm
+sudo python -m pip install --user --upgrade twine
+
+Right now no one else but charlie has access to the pip library,
+I think this is okay because no one else really knows.
