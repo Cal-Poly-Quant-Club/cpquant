@@ -5,6 +5,26 @@ import os
 import datetime as dt
 import plotly.graph_objects as go
 import plotly.offline as ofl
+import asyncio
+import websockets
+import json
+import time
+import threading
+from websockets.sync.client import connect
+# Load .env file
+from dotenv import load_dotenv
+load_dotenv()
+
+
+
+class ThetaDataClient:
+    def __init__(self):
+        headers = {
+            "Accept": "application/json"
+        }
+        data =requests.get("http://142.93.58.224/hist/option/eod?root=AAPL&start_date=20220901&end_date=20220915&strike=140000&exp=20220930&right=C", headers=headers)
+        print(data)  # displays the data. You can also do print(data).
+        print(data.json())
 
 
 class AlpacaDataClient:
@@ -175,3 +195,107 @@ class AlpacaDataClient:
             fig.show()
         else:
             ofl.iplot(fig)
+
+class AlpacaRealtimeClient:
+    def __init__(self) -> None:
+        self.alpaca_data_secret = os.environ.get('ALPACA_DATA_SECRET_KEY')
+        self.alpaca_data_public = os.environ.get('ALPACA_DATA_PUBLIC_KEY')
+        if self.alpaca_data_secret is None or self.alpaca_data_public is None:
+            raise Exception("Alpaca keys not found in environment variables!")
+        self.stream_url = "wss://stream.data.alpaca.markets/v2/sip"
+        self.socket = websockets.sync.client.connect(self.stream_url)
+        auth = {"action": "auth", "key": self.alpaca_data_public, "secret": self.alpaca_data_secret}
+        self.socket.send(json.dumps(auth))
+        self.curr_quotes = []
+        self.curr_trades = []
+        self.curr_bars = []
+
+
+    def subscribe_quotes(self, symbols):
+        self.curr_quotes.extend(symbols)
+        msg = {"action": "subscribe", "quotes": symbols}
+        self.socket.send(json.dumps(msg))
+
+    def subscribe_trades(self, symbols):
+        self.curr_trades.extend(symbols)
+        msg = {"action": "subscribe", "trades": symbols}
+        self.socket.send(json.dumps(msg))
+
+    def subscribe_bars(self, symbols, timeframe):
+        self.curr_bars.extend(symbols)
+        msg = {"action": "subscribe", "bars": symbols, "timeframe": timeframe}
+        self.socket.send(json.dumps(msg))
+    
+    def unsubscribe_quotes(self, symbols):
+        self.curr_quotes = [x for x in self.curr_quotes if x not in symbols]
+        msg = {"action": "unsubscribe", "quotes": symbols}
+        self.socket.send(json.dumps(msg))
+
+    def unsubscribe_trades(self, symbols):
+        self.curr_trades = [x for x in self.curr_trades if x not in symbols]
+        msg = {"action": "unsubscribe", "trades": symbols}
+        self.socket.send(json.dumps(msg))
+
+    def unsubscribe_bars(self, symbols, timeframe):
+        self.curr_bars = [x for x in self.curr_bars if x not in symbols]
+        msg = {"action": "unsubscribe", "bars": symbols, "timeframe": timeframe}
+        self.socket.send(json.dumps(msg))
+
+    def close(self):
+        self.socket.close()
+
+    def listen(self, handler=None):
+        while True:
+            try:
+                msg = self.socket.recv()
+                if handler is not None:
+                    handler(msg)
+                else:
+                    print(msg)
+            except:
+                print("Error receiving message from websocket!")
+                break
+
+    async def async_listen(self, handler):
+        while True:
+            try:
+                msg = self.socket.recv()
+                if handler is not None:
+                    handler(msg)
+                else:
+                    print(msg)
+                await asyncio.sleep(0) 
+            except Exception as e:
+                print(e)
+                print("Error receiving message from websocket!")
+                break
+
+
+# def handler(msg):
+#     print(msg, "Custom handle")
+
+# def between_callback(client, handler):
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+
+#     loop.run_until_complete(client.async_listen(handler))
+#     loop.close()
+
+# rtClient = AlpacaRealtimeClient()
+# rtClient.subscribe_quotes(["AAPL"])
+# rtClient.subscribe_trades(["AAPL"])
+# _thread = threading.Thread(target=between_callback, args=(rtClient, handler))
+# _thread.start()
+# count = 0
+# while True:
+#     time.sleep(1)
+#     count += 1
+#     if count == 10:
+#         rtClient.unsubscribe_quotes(["AAPL"])
+#         rtClient.unsubscribe_trades(["AAPL"])
+#     if count == 20:
+#         rtClient.subscribe_quotes(["TSLA"])
+#     print("Waiting...")
+# rtClient.close()
+
+
