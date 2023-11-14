@@ -51,7 +51,6 @@ class AlpacaDataClient:
         self.alpaca_data_public = os.environ.get('ALPACA_DATA_PUBLIC_KEY')
         if self.alpaca_data_secret is None or self.alpaca_data_public is None:
             raise Exception("Alpaca keys not found in environment variables!")
-        
         self.alpaca_data_url = 'https://data.alpaca.markets/v2/'
         self.headers = {"accept": "application/json", 'APCA-API-KEY-ID': self.alpaca_data_public, 'APCA-API-SECRET-KEY': self.alpaca_data_secret}
         self.start_data = dt.datetime.now() - dt.timedelta(days=365)
@@ -361,13 +360,13 @@ class AlpacaRealtimeClient:
                 break
 
 
-data_client = AlpacaDataClient()
-# Get trades
-trades = data_client.get_trades(["AAPL"], 
-                                start = "2021-09-01", 
-                                end = "2022-09-02",
-                                limit=1000)
-print(trades["AAPL"])
+# data_client = AlpacaDataClient()
+# # Get trades
+# trades = data_client.get_trades(["AAPL"], 
+#                                 start = "2021-09-01", 
+#                                 end = "2022-09-02",
+#                                 limit=1000)
+# print(trades["AAPL"])
 
 # def handler(msg):
 #     print(msg, "Custom handle")
