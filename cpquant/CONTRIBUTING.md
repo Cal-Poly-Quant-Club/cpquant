@@ -1,7 +1,6 @@
 # Contributing
 
-Contributions are welcome, and they are greatly appreciated! Every little bit
-helps, and credit will always be given.
+Contributions are welcome, however we ask that you must first become a member of the Cal Poly SLO Quantitative Finance (Cal Poly Quant Club).
 
 ## Types of Contributions
 

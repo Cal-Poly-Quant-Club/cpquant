@@ -10,15 +10,16 @@ $ pip install cpquant
 
 ## Usage
 
-- TODO
+`cpquant` contains functions to allow the Cal Poly Quant Club to easily access and manipulate financial data
+
 
 ## Contributing
 
-Interested in contributing? Check out the contributing guidelines. Please note that this project is released with a Code of Conduct. By contributing to this project, you agree to abide by its terms.
+Interested in contributing? Join the Cal Poly Quant Club to learn more. Follow us on instagram @calpolyquantclub
 
 ## License
 
-`cpquant` was created by Charlie Ray. It is licensed under the terms of the MIT license.
+`cpquant` was created by Cal Poly Quantitative Finance Club. It is licensed under the terms of the MIT license.
 
 ## Credits
 
