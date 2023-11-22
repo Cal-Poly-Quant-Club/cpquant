@@ -26,6 +26,36 @@ class ThetaDataClient:
         print(data.json())
 
 
+class TradeGroup:
+    def __init__(self, client, symbols, start=None, end=None, limit=1000, asof=None, feed="iex", currency="USD", page_token=None):
+        self.client = client
+        self.symbols = symbols
+        self.start = start
+        self.end = end
+        self.limit = limit
+        self.asof = asof
+        self.feed = feed
+        self.currency = currency
+        self.page_token = page_token
+        self.already_iterated = False
+
+    def __iter__(self):
+        self.trades, self.next_page_token = self.client.get_trades(self.symbols, self.start, self.end, self.limit, self.asof, self.feed, self.currency, self.page_token)
+        return self
+    
+    def __next__(self):
+        if self.next_page_token is not None:
+            self.page_token = self.next_page_token
+            self.trades, self.next_page_token = self.client.get_trades(self.symbols, self.start, self.end, self.limit, self.asof, self.feed, self.currency, self.page_token)
+            self.already_iterated = True
+            return self.trades
+        elif self.trades is not None and not self.already_iterated:
+            copy = self.trades
+            self.trades = None
+            return copy
+        else:
+            raise StopIteration
+
 class AlpacaDataClient:
     """
     A class for retrieving data from Alpaca API.
@@ -125,6 +155,9 @@ class AlpacaDataClient:
             A dictionary mapping each symbol to its corresponding DataFrame, with columns renamed and index set to the timestamp.
         """
         dfs = {}
+        if len(data[type]) == 0:
+            return None, None
+        next_page_token = data.get("next_page_token")                        
         for symbol in symbols:
             dfs[symbol] = pd.DataFrame(data[type][symbol])
             dfs[symbol].set_index("t", inplace=True)
@@ -136,7 +169,7 @@ class AlpacaDataClient:
             if only_market:
                 # Restrict time to market hours, our data is in UTC
                 dfs[symbol] = dfs[symbol].between_time('13:30', '20:00')
-        return dfs
+        return dfs, next_page_token
 
     def do_get(self, url, params):
         result = requests.get(url, headers=self.headers, params=params)
@@ -181,7 +214,7 @@ class AlpacaDataClient:
             if data is None:
                 return data
             renaming_dict = {"o": "open", "h": "high", "l": "low", "c": "close", "v": "volume", "n": "trades", "vw": "volume weighted"}
-            return self._parse_data(data, symbols, renaming_dict, only_market, "bars")
+            return self._parse_data(data, symbols, renaming_dict, only_market, "bars")[0]
 
     def get_latest_bars(self, symbols, feed="iex", currency="USD"):
             """
@@ -206,9 +239,12 @@ class AlpacaDataClient:
             if data is None:
                 return data
             renaming_dict = {"o": "open", "h": "high", "l": "low", "c": "close", "v": "volume", "n": "trades", "vw": "volume weighted"}
-            return self._parse_data(data, symbols, renaming_dict, False, "bars")
+            return self._parse_data(data, symbols, renaming_dict, False, "bars")[0]
 
-    def get_trades(self, symbols, start=None, end=None, limit=1000, asof=None, feed="iex", currency="USD", page_token=None):
+    def get_trades_iterator(self, symbols, start=None, end=None, limit=10000, asof=None, feed="iex", currency="USD", page_token=None):
+        return TradeGroup(self, symbols, start, end, limit, asof, feed, currency, page_token)
+
+    def get_trades(self, symbols, start=None, end=None, limit=10000, asof=None, feed="iex", currency="USD", page_token=None):
             """
             Retrieves trade data for the specified symbols and time range.
 
@@ -226,6 +262,10 @@ class AlpacaDataClient:
                 dict: A dictionary containing the trade data for the specified symbols and time range.
             """
             start, end, asof, symbols = self._check_params(start, end, asof, symbols)
+            if limit == None:
+                alpacaLimit = 10000
+            else:
+                alpacaLimit = limit
             if len(symbols) > 1:
                 raise Exception("Can only retrieve trade data for 1 symbol at a time!")
             url = self.alpaca_data_url + 'stocks/trades'
@@ -233,7 +273,7 @@ class AlpacaDataClient:
                         'symbols': symbols,
                         'start': start,
                         'end': end,
-                        'limit': limit,
+                        'limit': alpacaLimit,
                         'asof': asof,
                         'feed': feed,
                         'currency': currency,
@@ -244,7 +284,8 @@ class AlpacaDataClient:
             if data is None:
                 return data
             renaming_dict = {"p": "price", "s": "size", "c": "condition", "i": "trade_id", "x": "exchange_code", "z": "exchange"}
-            return self._parse_data(data, symbols, renaming_dict, False, "trades")
+            data, next_page_token = self._parse_data(data, symbols, renaming_dict, False, "trades")
+            return data, next_page_token
 
     def get_exchange_codes(self):
             """
@@ -361,12 +402,20 @@ class AlpacaRealtimeClient:
 
 
 # data_client = AlpacaDataClient()
-# # Get trades
-# trades = data_client.get_trades(["AAPL"], 
-#                                 start = "2021-09-01", 
-#                                 end = "2022-09-02",
-#                                 limit=1000)
-# print(trades["AAPL"])
+# Get trades
+# start_time = "2021-09-01T12:00:44.027Z"
+# end_time = "2021-09-01T12:14:01Z"
+# start_time = "2021-09-01"
+# end_time = "2021-09-02"
+# trades = data_client.get_trades_iterator(["AAPL"], 
+#                                 start = start_time, 
+#                                 end = end_time)
+# for trade in trades:
+#     print(trade)
+
+# tg = TradeGroup(10)
+# for trade in tg:
+#     print(trade)
 
 # def handler(msg):
 #     print(msg, "Custom handle")
