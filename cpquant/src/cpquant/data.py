@@ -27,7 +27,7 @@ class ThetaDataClient:
 
 
 class TradeGroup:
-    def __init__(self, client, symbols, start=None, end=None, limit=1000, asof=None, feed="iex", currency="USD", page_token=None):
+    def __init__(self, client, symbols, start=None, end=None, limit=10000, asof=None, feed="iex", currency="USD", page_token=None):
         self.client = client
         self.symbols = symbols
         self.start = start
@@ -40,10 +40,14 @@ class TradeGroup:
         self.already_iterated = False
 
     def __iter__(self):
-        self.trades, self.next_page_token = self.client.get_trades(self.symbols, self.start, self.end, self.limit, self.asof, self.feed, self.currency, self.page_token)
+        self.trades = -1
+        self.next_page_token = None
         return self
     
     def __next__(self):
+        if self.next_page_token is None and self.trades == -1:
+            self.trades, self.next_page_token = self.client.get_trades(self.symbols, self.start, self.end, self.limit, self.asof, self.feed, self.currency, self.page_token)
+            return self.trades
         if self.next_page_token is not None:
             self.page_token = self.next_page_token
             self.trades, self.next_page_token = self.client.get_trades(self.symbols, self.start, self.end, self.limit, self.asof, self.feed, self.currency, self.page_token)
@@ -401,17 +405,17 @@ class AlpacaRealtimeClient:
                 break
 
 
-# data_client = AlpacaDataClient()
+data_client = AlpacaDataClient()
 # Get trades
 # start_time = "2021-09-01T12:00:44.027Z"
 # end_time = "2021-09-01T12:14:01Z"
-# start_time = "2021-09-01"
-# end_time = "2021-09-02"
-# trades = data_client.get_trades_iterator(["AAPL"], 
-#                                 start = start_time, 
-#                                 end = end_time)
-# for trade in trades:
-#     print(trade)
+start_time = "2023-11-20"
+end_time = "2023-11-21"
+trades = data_client.get_trades_iterator(["AAPL"], 
+                                start = start_time, 
+                                end = end_time)
+for trade in trades:
+    print(trade)
 
 # tg = TradeGroup(10)
 # for trade in tg:
