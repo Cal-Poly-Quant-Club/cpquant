@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.1.3 (21/11/2023)
+
+- Removed residual code from data
+
 ## v0.1.2 (21/11/2023)
 
 ### Fix

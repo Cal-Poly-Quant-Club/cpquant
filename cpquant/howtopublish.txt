@@ -1,4 +1,7 @@
 poetry version patch/patch-minor/minor/major/major-minor/major-patch/major-minor-patch
+git push
+git tag X.X.X
+git push --tags
 poetry build
 poetry publish -r test-pypi
 poety publish

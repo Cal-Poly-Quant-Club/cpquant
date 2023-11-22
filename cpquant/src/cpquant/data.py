@@ -405,17 +405,17 @@ class AlpacaRealtimeClient:
                 break
 
 
-data_client = AlpacaDataClient()
-# Get trades
-# start_time = "2021-09-01T12:00:44.027Z"
-# end_time = "2021-09-01T12:14:01Z"
-start_time = "2023-11-20"
-end_time = "2023-11-21"
-trades = data_client.get_trades_iterator(["AAPL"], 
-                                start = start_time, 
-                                end = end_time)
-for trade in trades:
-    print(trade)
+# data_client = AlpacaDataClient()
+# # Get trades
+# # start_time = "2021-09-01T12:00:44.027Z"
+# # end_time = "2021-09-01T12:14:01Z"
+# start_time = "2023-11-20"
+# end_time = "2023-11-21"
+# trades = data_client.get_trades_iterator(["AAPL"], 
+#                                 start = start_time, 
+#                                 end = end_time)
+# for trade in trades:
+#     print(trade)
 
 # tg = TradeGroup(10)
 # for trade in tg:
