@@ -1,0 +1,4 @@
+poetry version patch/patch-minor/minor/major/major-minor/major-patch/major-minor-patch
+poetry build
+poetry publish -r test-pypi
+poety publish
