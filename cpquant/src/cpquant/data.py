@@ -164,6 +164,7 @@ class AlpacaDataClient:
                 return None, None
         except Exception as e:
             print("Error parsing data: " + str(e))
+            print(data)
             raise e
         next_page_token = data.get("next_page_token")                        
         for symbol in symbols:
