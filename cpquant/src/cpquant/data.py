@@ -159,8 +159,12 @@ class AlpacaDataClient:
             A dictionary mapping each symbol to its corresponding DataFrame, with columns renamed and index set to the timestamp.
         """
         dfs = {}
-        if len(data[type]) == 0:
-            return None, None
+        try:
+            if len(data[type]) == 0:
+                return None, None
+        except Exception as e:
+            print("Error parsing data: " + str(e))
+            raise e
         next_page_token = data.get("next_page_token")                        
         for symbol in symbols:
             dfs[symbol] = pd.DataFrame(data[type][symbol])
