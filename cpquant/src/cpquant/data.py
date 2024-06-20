@@ -639,13 +639,13 @@ class AlpacaRealtimeClient:
 # rtClient.close()
 
 
-client = AlpacaDataClient()
-chain = client.get_option_chain("AAPL", strike_price_gte=200, limit=1000)
-page_token = chain[0]
-chain = chain[1]
-# sort by strike price and expiration date
-chain = chain.sort_values(by=["strike_price", "expirtion_date"])
-print(chain)
+# client = AlpacaDataClient()
+# chain = client.get_option_chain("AAPL", strike_price_gte=200, limit=1000)
+# page_token = chain[0]
+# chain = chain[1]
+# # sort by strike price and expiration date
+# chain = chain.sort_values(by=["strike_price", "expirtion_date"])
+# print(chain)
 
-historical_bars = client.get_option_historical_bars(["AAPL240621C00070000"], start="2024-03-01", end="2024-06-01", limit=1000)
-print(historical_bars)
+# historical_bars = client.get_option_historical_bars(["AAPL240621C00070000"], start="2024-03-01", end="2024-06-01", limit=1000)
+# print(historical_bars)
