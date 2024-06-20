@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cpquant"
-version = "0.1.5"
+version = "0.1.6"
 description = "A python package developed by the Cal Poly Quantitative Finance Club for dealing with financial data (California Polytechnic State University San Luis Obispo)"
 authors = ["Charlie Ray"]
 license = "MIT"

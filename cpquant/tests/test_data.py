@@ -8,3 +8,8 @@ def test_get_bars():
     assert len(bars) == 1
     assert "AAPL" in bars.keys()
     assert isinstance(bars["AAPL"], pd.DataFrame)
+
+def test_get_option_chain():
+    client = AlpacaDataClient()
+    chain = client.get_option_chain("AAPL")
+    print(chain)
