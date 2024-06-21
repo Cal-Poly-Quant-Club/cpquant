@@ -199,8 +199,16 @@ class AlpacaDataClient:
             print("Error parsing data: " + str(e))
             print(data)
             raise e
-        next_page_token = data.get("next_page_token")                        
+        next_page_token = data.get("next_page_token")
+        aquired_symbols = []
+        rejected_symbols = []                   
         for symbol in symbols:
+            try:
+                dfs[symbol] = pd.DataFrame(data[type][symbol])
+                aquired_symbols.append(symbol)
+            except:
+                rejected_symbols.append(symbol)
+                continue
             dfs[symbol] = pd.DataFrame(data[type][symbol])
             dfs[symbol].set_index("t", inplace=True)
             dfs[symbol].index = dfs[symbol].index.map(lambda x: x if '.' in x else x[:-1] + '.000Z')
@@ -211,7 +219,9 @@ class AlpacaDataClient:
             if only_market:
                 # Restrict time to market hours, our data is in UTC
                 dfs[symbol] = dfs[symbol].between_time('13:30', '20:00')
-        return dfs, next_page_token
+        if len(rejected_symbols) > 0:
+            print("Rejected symbols: " + str(rejected_symbols))
+        return dfs, next_page_token, aquired_symbols
     
     def _format_option_chain(self, options_data, underlying_symbol):
         keys = options_data.keys()
@@ -399,8 +409,8 @@ class AlpacaDataClient:
             if data is None:
                 return data
             renaming_dict = {"p": "price", "s": "size", "c": "condition", "i": "trade_id", "x": "exchange_code", "z": "exchange"}
-            data, next_page_token = self._parse_data(data, symbols, renaming_dict, False, "trades")
-            return data, next_page_token
+            data, next_page_token, aquired_symbols = self._parse_data(data, symbols, renaming_dict, False, "trades")
+            return data, next_page_token, aquired_symbols
 
     def get_exchange_codes(self):
             """
@@ -492,9 +502,10 @@ class AlpacaDataClient:
             result = self.do_get(url, params)
             data = self._check_valid_response(result)
             if data is None:
+                print("No Data gathered")
                 return data
             renaming_dict = {"o": "open", "h": "high", "l": "low", "c": "close", "v": "volume", "n": "trades", "vw": "volume weighted"}
-            return self._parse_data(data, symbols, renaming_dict, False, "bars")[0]
+            return self._parse_data(data, symbols, renaming_dict, False, "bars")
     
     def get_option_historical_bars_iterator(self, symbols, timeframe="1D", start=None, end=None, limit=1000, page_token=None, sort="asc"):
         return OptionBarGroup(self, symbols, timeframe, start, end, limit, page_token, sort)
@@ -649,3 +660,12 @@ class AlpacaRealtimeClient:
 
 # historical_bars = client.get_option_historical_bars(["AAPL240621C00070000"], start="2024-03-01", end="2024-06-01", limit=1000)
 # print(historical_bars)
+# client = AlpacaDataClient()
+# apple_expirtations = ["2024-06-21"]
+# chain = client.get_option_chain("AAPL", strike_price_gte=0, strike_price_lte=300, limit=1000, expiration_date=apple_expirtations[0], type="put")
+# page_token = chain[0]
+# chain = chain[1]
+
+# historical_bars, page_token, aquired_symbols = client.get_option_historical_bars(chain["symbol"].to_list(), start="2024-05-21", end="2024-05-21", limit=1000)
+
+
